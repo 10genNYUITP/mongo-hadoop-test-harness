@@ -2,5 +2,5 @@ Please change all the pathnames to match your environment.
 
 Please also make sure the following:
 1) Mongo server is up and running
-2) For WordCountSplitTest: startServer.sh, loadData.sh and setClasspath.sh scripts need to run beforehand
+2) For WordCountSplitTest: startServer.sh, loadData.sh and setClasspath.sh scripts from mongo-hadoop / examples / wordcount_split_test need to run beforehand
 3) For other tests make sure you make appropriate changes to the above scripts
