@@ -5,16 +5,16 @@ import java.security.MessageDigest;
 import com.mongodb.*;
 
 public class testHarness {
-	@SuppressWarnings("unchecked")
-	public static void main(String[] args) {
-		boolean useQuery = false;
-		boolean testSlaveOk = false;
-		boolean[] tf = {false, true};
-		Boolean[] ntf = {null};
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        boolean useQuery = false;
+        boolean testSlaveOk = false;
+        boolean[] tf = {false, true};
+        Boolean[] ntf = {null};
 
-		try {				
-			System.out.print("Set use-query? (Y/N): ");
-			BufferedReader bfrq = new BufferedReader(new InputStreamReader(System.in));
+        try {				
+            System.out.print("Set use-query? (Y/N): ");
+            BufferedReader bfrq = new BufferedReader(new InputStreamReader(System.in));
 			if(bfrq.readLine().equals("Y"))
 				useQuery = true;
 			else
