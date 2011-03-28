@@ -39,10 +39,13 @@ class PropertyCycle {
     }
 
     private void runTool(MongoTool tool, String[] args) throws Exception {
-        tool.run(args);
+    	if (next == null)
+            tool.run(args);
+        else
+            next.runTool(tool, args);
     }
 
-    void run(MongoTool tool, String[] args) throws Exception {
+    void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
         //If we have a when node only cycle through our values if then when node is satisfied.
         if (when != null && !when.is_satifisifed(conf))
@@ -51,10 +54,7 @@ class PropertyCycle {
             for (String val : vals) {
                 //ideally clone conf and work with the clone, but I don't know if that is possible
                 conf.set(name, val);
-                if (next == null)
-                    runTool(tool, args);
-                else
-                    next.runTool(tool, args);
+                runTool(tool, args);
             }
     } //run()
     //run()
