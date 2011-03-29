@@ -38,7 +38,7 @@ class PropertyCycle {
         return vals.contains(conf.get(name));
     }
 
-    private void runTool(MongoTool tool, String[] args) throws Exception {
+    private void runTool(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
     	if (next == null)
             tool.run(args);
         else
