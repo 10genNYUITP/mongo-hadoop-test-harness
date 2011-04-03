@@ -5,50 +5,25 @@ import java.security.MessageDigest;
 import com.mongodb.*;
 
 public class testHarness{
+	
+	String [] testcases = null;	
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args){
-		String filenAME  = "Config.xml";
+		String fileName  = "Config.xml";
 		boolean useQuery = false;
 		boolean testSlaveOk = false;
 		boolean[] tf = {false, true};
 		Boolean[] ntf = {null};
 
-		try{
+		try{if (testSlaveOk)
+			ntf = new Boolean[]{null, Boolean.TRUE, Boolean.FALSE}; 
 
 			ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 
-			List<String> testcases = null;
-            System.out.print("Enter the testcase class names: ");
-			BufferedReder bfrTC = new BufferedReader(new InputStreamReader(System.in));
-			while((String tcLine = bfrTC.readLine()) != null) {
-				StringTokenizer stz = new StringTokenizer(tcLine);
-				while(stz.hasMoreTokens) {
-					testcases.add(stz.nextToken());
-				}
+			for(TestCase tcase : cfrNew.testcases){
+				tcase.runTest(cfrNew.propertyCycle);
 			}
-			for(String classname : testcases){
-				org.apache.hadoop.util.Tool tool = Class.forName(classname);
-				String[] args2 = null;
-				cfrNew.propertyCycle.run(tool, args2);
-			}
-
-			System.out.print("Set use-query? (Y/N): ");
-			BufferedReader bfrq = new BufferedReader(new InputStreamReader(System.in));
-			if(bfrq.readLine().equals("Y"))
-				useQuery = true;
-			else
-				useQuery = false;
-
-			System.out.print("Set slave-ok? (Y/N): ");
-			BufferedReader bfrs = new BufferedReader(new InputStreamReader(System.in));
-			if(bfrs.readLine().equals("Y"))
-				testSlaveOk = true;
-			else
-				testSlaveOk = false;
-
-			if (testSlaveOk)
-				ntf = new Boolean[]{null, Boolean.TRUE, Boolean.FALSE}; 
 		} catch(IOException ioe){
 			ioe.printStackTrace();
 		}
