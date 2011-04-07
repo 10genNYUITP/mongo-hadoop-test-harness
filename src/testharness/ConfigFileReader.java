@@ -88,7 +88,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	@Override	// is this invoked automatically? Where and when are the parameters for startElement set? -> checks if propert is there in the xml file
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if ("property".equals(qName)){
-			PropertyHandler ph = new PropertyHandler(); // Functionality of propertyHandler?
+			PropertyHandler ph = new PropertyHandler();
 			ph.parent = this;
 			parser.setContentHandler(ph);
 			ph.startElement(uri, localName, qName, atts);

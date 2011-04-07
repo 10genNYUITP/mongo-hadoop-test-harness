@@ -21,16 +21,19 @@ public class testHarness{
             Map.Entry<String, TestCase> pairs = (Map.Entry) i1.next();
             TestCase tcase = (TestCase) pairs.getValue();
             String tname = (String) pairs.getKey();
-            String collection = tname + "_" + cfrNew.args.toArray();
+            String collection = tname + "_" + Arrays.toString(cfrNew.args);
             //^^^ This is not what you want. first of all this would put something like @[1234 in the string,
             //which is not what you want. Arrays.toString(cfrNew.args) would be better.  But this might not be
             //a valid mongo collection name.  You will probably have to create a method to get a collection name
             //from a testcase
+            
+            //^^^ We are creating a collection name to store it in Mongo. We fetch them later, tokenize based on this format and evaluate and display results.
+            // I think your suggestion works fine
+            
             DBAddress dba = new DBAddress("localhost", cfrNew.dbport, cfrNew.dbname);
             DB db = Mongo.connect(dba);
             DBCollection coll = db.getCollection(collection);
-            coll.drop();
-            coll.getCollection(collection); //  what is this line for?
+            db.removeAll(coll);
             final long start = System.currentTimeMillis();
             tcase.runTest(cfrNew.propertyCycle);
             final long end = System.currentTimeMillis();
