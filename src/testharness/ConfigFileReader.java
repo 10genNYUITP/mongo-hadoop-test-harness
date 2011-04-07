@@ -9,19 +9,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import java.util.*;
-/**
-    //config looks like:
 
-{@literal <config>
-     <testparams>
- * <property name="mongo.splits.use-chunks">  <val value="true"/><val value="false"></property>
- * <property name="mongo.splits.use-shards">  <val value="true"/><val value="false"></property>
- * <property name="mongo.splits.slaveok"><when property="use-shards" val="true">  <val value="true"/><val value="false"></property>
- * </testparams>
- * <test class="WordCount" args=""></test>
- * <test class="WordCount" args="--use-query"></test>
- * }
- */
 class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 
 	PropertyCycle propertyCycle;
@@ -69,7 +57,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		XMLReader xr = org.xml.sax.helpers.XMLReaderFactory.createXMLReader();
 		xr.setFeature("http://xml.org/sax/features/validation", false);
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
-		ConfigFileReader cfr = new ConfigFileReader();	// Why is cfr.parser needed at all?
+		ConfigFileReader cfr = new ConfigFileReader();
 		cfr.parser = xr;
                 xr.setContentHandler(cfr);
 		xr.parse(new InputSource(r));
@@ -86,7 +74,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	}
 
 
-	@Override	// is this invoked automatically? Where and when are the parameters for startElement set? -> checks if propert is there in the xml file
+	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if ("property".equals(qName)){
 			PropertyHandler ph = new PropertyHandler();
