@@ -7,7 +7,7 @@ public class TestCase {
     private org.apache.hadoop.util.Tool tool;
     private String [] args;
     
-    TestCase(org.apache.hadoop.util.Tool tool, String args) {
+    TestCase(org.apache.hadoop.util.Tool tool, String[] args) {
     	this.tool = tool;
     	this.args = args;
     }
