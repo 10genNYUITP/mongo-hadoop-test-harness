@@ -2,6 +2,7 @@
 import java.io.IOException;
 import java.io.Reader;
 import javax.xml.parsers.*;
+import org.apache.hadoop.util.Tool;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -31,7 +32,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	int dbport;
 	String binpath;
 	String testName; 
-	List<String> args = new List<String>();
+	List<String> args = new ArrayList<String>();
 
 	class PropertyHandler extends org.xml.sax.ext.DefaultHandler2{
 		ContentHandler parent ;
@@ -64,13 +65,14 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		
 	}
 
-	static void parse(Reader r) throws SAXException, ParserConfigurationException, IOException{
+	static ConfigFileReader parse(Reader r) throws SAXException, ParserConfigurationException, IOException{
 		XMLReader xr = org.xml.sax.helpers.XMLReaderFactory.createXMLReader();
 		xr.setFeature("http://xml.org/sax/features/validation", false);
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
 		ConfigFileReader cfr = new ConfigFileReader();	// Why is cfr.parser needed at all?
 		cfr.parser = xr;
 		xr.parse(new InputSource(r));
+                return cfr;
 	}
 
 
@@ -98,12 +100,16 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		else if ("test".equals(qName)) {
 				String argument = atts.getValue("args");
 				StringTokenizer stz = new StringTokenizer(argument);
-				while(stz.hasMoreTokens) {
+				while(stz.hasMoreTokens()) {
 					args.add(stz.nextToken());
 				}
 				testName = atts.getValue("class");
-				TestCase tc = new TestCase(Class.forName(testName), args.toArray());
+            try {
+				TestCase tc = new TestCase((Tool) Class.forName(testName).newInstance(), (String[]) args.toArray(new String[args.size()]));
 				testcases.put(testName, tc);
+            } catch (Exception ex) {
+                System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+ex.getMessage());
+            }
 		} 
 		else if ("dbprops".equals(qName)) {
 			dbname = atts.getValue("dbname");
