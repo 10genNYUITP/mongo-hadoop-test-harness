@@ -71,6 +71,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
 		ConfigFileReader cfr = new ConfigFileReader();	// Why is cfr.parser needed at all?
 		cfr.parser = xr;
+                xr.setContentHandler(cfr);
 		xr.parse(new InputSource(r));
         return cfr;
 	}
