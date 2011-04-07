@@ -8,13 +8,13 @@ public class testHarness{
 	
     String [] testcases = null;	
 
-    @SuppressWarnings("unchecked")
+    
     public static void main(String[] args) throws Exception{
         String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";	
         ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 				
         java.util.Iterator<Map.Entry<String, TestCase>> i1 = cfrNew.testcases.entrySet().iterator();
-        while (i1.hasNext()) {	
+        while (i1.hasNext()) {	 
             Map.Entry<String, TestCase> pairs = (Map.Entry) i1.next();
             TestCase tcase = (TestCase) pairs.getValue();
             String tname = (String) pairs.getKey();
