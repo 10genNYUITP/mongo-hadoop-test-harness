@@ -10,10 +10,7 @@ public class testHarness{
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws Exception{
-        String fileName  = "Config.xml";
-
-
-	
+        String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";	
         ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 				
         java.util.Iterator<Map.Entry<String, TestCase>> i1 = cfrNew.testcases.entrySet().iterator();
@@ -21,7 +18,11 @@ public class testHarness{
             Map.Entry<String, TestCase> pairs = (Map.Entry) i1.next();
             TestCase tcase = (TestCase) pairs.getValue();
             String tname = (String) pairs.getKey();
-            String collection = tname + "_" + Arrays.toString(cfrNew.args);
+            String makeArgs = null;
+            for(String listElements : cfrNew.args) {
+            	makeArgs += listElements;
+            }
+            String collection = tname + "_" + makeArgs;
             //^^^ This is not what you want. first of all this would put something like @[1234 in the string,
             //which is not what you want. Arrays.toString(cfrNew.args) would be better.  But this might not be
             //a valid mongo collection name.  You will probably have to create a method to get a collection name
@@ -33,7 +34,10 @@ public class testHarness{
             DBAddress dba = new DBAddress("localhost", cfrNew.dbport, cfrNew.dbname);
             DB db = Mongo.connect(dba);
             DBCollection coll = db.getCollection(collection);
-            db.removeAll(coll);
+            if (db.collectionExists(collection)) {
+            	coll.drop();
+            }
+            
             final long start = System.currentTimeMillis();
             tcase.runTest(cfrNew.propertyCycle);
             final long end = System.currentTimeMillis();
@@ -41,7 +45,7 @@ public class testHarness{
             java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
             nf.setMaximumFractionDigits(3);
 					
-            Process proc = Runtime.getRuntime().exec(binpath + "mongodump -h localhost:" + cfrNew.dbport + " -d " + cfrNew.dbname + " -c " + collection);
+            Process proc = Runtime.getRuntime().exec(cfrNew.binpath + "mongodump -h localhost:" + cfrNew.dbport + " -d " + cfrNew.dbname + " -c " + collection);
             BufferedReader bfrME = new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String tempLine;
             while((tempLine = bfrME.readLine()) != null) {
@@ -49,7 +53,7 @@ public class testHarness{
             }
             bfrME.close();
 
-            FileReader fr = new FileReader("/dump/" + cfrNew.dbname + "/" + cfrNew.dbname + crfNew.args.toArray() + ".bson");
+            FileReader fr = new FileReader("/dump/" + cfrNew.dbname + "/" + collection + ".bson");
             BufferedReader tbfr = new BufferedReader(fr);
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] dataBytes = new byte[10000];	

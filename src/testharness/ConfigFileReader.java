@@ -72,7 +72,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		ConfigFileReader cfr = new ConfigFileReader();	// Why is cfr.parser needed at all?
 		cfr.parser = xr;
 		xr.parse(new InputSource(r));
-                return cfr;
+        return cfr;
 	}
 
 
