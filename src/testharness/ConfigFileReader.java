@@ -7,6 +7,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import java.util.*;
 /**
     //config looks like:
 
@@ -24,7 +25,13 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 
 	PropertyCycle propertyCycle;
 	private XMLReader parser;
-	List<TestCase> testcases = new List<TestCase>();
+	//List<TestCase> testcases = new List<TestCase>();
+	Map<String, TestCase> testcases = new HashMap<String, TestCase>();
+	String dbname;
+	int dbport;
+	String binpath;
+	String testName; 
+	List<String> args = new List<String>();
 
 	class PropertyHandler extends org.xml.sax.ext.DefaultHandler2{
 		ContentHandler parent ;
@@ -35,10 +42,9 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 			depth++;
 			if(depth == 1){
 				pc = new PropertyCycle( attributes.getValue("name"));
-			}else if ("val".equals(qName)){
+			} else if ("val".equals(qName)){
 				pc.addValue(attributes.getValue("value"));
-			}else if ("when".equals(qName)){
-
+			} else if ("when".equals(qName)){
 				PropertyHandler ph = new PropertyHandler();
 				ph.parent = this;
 				parser.setContentHandler(ph);
@@ -62,7 +68,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		XMLReader xr = org.xml.sax.helpers.XMLReaderFactory.createXMLReader();
 		xr.setFeature("http://xml.org/sax/features/validation", false);
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
-		ConfigFileReader cfr = new ConfigFileReader();
+		ConfigFileReader cfr = new ConfigFileReader();	// Why is cfr.parser needed at all?
 		cfr.parser = xr;
 		xr.parse(new InputSource(r));
 	}
@@ -77,10 +83,10 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	}
 
 
-	@Override
+	@Override	// is this invoked automatically? Where and when are the parameters for startElement set? -> checks if propert is there in the xml file
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if ("property".equals(qName)){
-			PropertyHandler ph = new PropertyHandler();
+			PropertyHandler ph = new PropertyHandler(); // Functionality of propertyHandler?
 			ph.parent = this;
 			parser.setContentHandler(ph);
 			ph.startElement(uri, localName, qName, atts);
@@ -88,16 +94,21 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				propertyCycle = ph.pc;
 			else
 				propertyCycle.add(ph.pc);
-			else if ("test".equals(qName)) {
+		}
+		else if ("test".equals(qName)) {
 				String argument = atts.getValue("args");
-				List<String> args = new List<String>();
 				StringTokenizer stz = new StringTokenizer(argument);
 				while(stz.hasMoreTokens) {
 					args.add(stz.nextToken());
 				}
-				TestCase tc = new TestCase(Class.forName(atts.get("class")), args.toArray());
-				testcases.add(tc);
-			}
+				testName = atts.getValue("class");
+				TestCase tc = new TestCase(Class.forName(testName), args.toArray());
+				testcases.put(testName, tc);
+		} 
+		else if ("dbprops".equals(qName)) {
+			dbname = atts.getValue("dbname");
+			dbport = Integer.parseInt(atts.getValue("port"));
+			binpath = atts.getValue("path");
 		}
 	}
 
