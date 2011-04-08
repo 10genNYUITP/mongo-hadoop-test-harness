@@ -1,3 +1,4 @@
+
 import java.io.*;
 import java.util.*;
 import java.security.MessageDigest;
@@ -6,11 +7,9 @@ import com.mongodb.*;
 
 public class testHarness{
 	
-    String [] testcases = null;	
-
+    String [] testcases = null;
     
     public static void main(String[] args) throws Exception{
-    	System.out.println("Entered harness");
         String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";	
         ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 				
@@ -24,7 +23,7 @@ public class testHarness{
             	makeArgs += listElements;
             }
             String collection = tname + "_" + makeArgs;
-            System.out.println("Collection is: " + collection);
+            //System.out.println("Collection is: " + collection);
             //^^^ This is not what you want. first of all this would put something like @[1234 in the string,
             //which is not what you want. Arrays.toString(cfrNew.args) would be better.  But this might not be
             //a valid mongo collection name.  You will probably have to create a method to get a collection name
@@ -54,6 +53,8 @@ public class testHarness{
                 System.out.println(tempLine);
             }
             bfrME.close();
+            
+            // put md5 in another class
 
             FileReader fr = new FileReader("/dump/" + cfrNew.dbname + "/" + collection + ".bson");
             BufferedReader tbfr = new BufferedReader(fr);
@@ -81,3 +82,4 @@ public class testHarness{
         }
     }//main()
 }
+

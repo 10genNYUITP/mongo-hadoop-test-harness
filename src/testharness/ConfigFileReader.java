@@ -16,6 +16,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	private XMLReader parser;
 	//List<TestCase> testcases = new List<TestCase>();
 	Map<String, TestCase> testcases = new HashMap<String, TestCase>();
+	TestCase current_testcase;
 	String dbname;
 	int dbport;
 	String binpath;
@@ -59,8 +60,8 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
 		ConfigFileReader cfr = new ConfigFileReader();
 		cfr.parser = xr;
+        xr.setContentHandler(cfr);
 		xr.parse(new InputSource(r));
-		System.out.println(cfr);
         return cfr;
 	}
 
@@ -79,14 +80,19 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if ("property".equals(qName)){
-			PropertyHandler ph = new PropertyHandler();
-			ph.parent = this;
-			parser.setContentHandler(ph);
-			ph.startElement(uri, localName, qName, atts);
-			if (propertyCycle == null)
-				propertyCycle = ph.pc;
-			else
-				propertyCycle.add(ph.pc);
+			if (current_testcase == null){
+				PropertyHandler ph = new PropertyHandler();
+				ph.parent = this;
+				parser.setContentHandler(ph);
+				ph.startElement(uri, localName, qName, atts);
+				if (propertyCycle == null)
+					propertyCycle = ph.pc;
+				else
+					propertyCycle.add(ph.pc);
+			} else {
+				System.out.println(atts.getValue("name") + atts.getValue("val"));
+				current_testcase.setProperty(atts.getValue("name"), atts.getValue("val"));
+			}
 		}
 		else if ("test".equals(qName)) {
 				String argument = atts.getValue("args");
@@ -98,9 +104,11 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
             try {
             	Object o = Class.forName(testName).newInstance();
             	System.out.println("Class "+o.getClass().getName()+" is a Tool: "+ (o instanceof Tool ));
-				TestCase tc = new TestCase((Tool) Class.forName(testName).newInstance(), (String[]) args.toArray(new String[args.size()]));
-				testcases.put(testName, tc);
+		TestCase tc = new TestCase((Tool) Class.forName(testName).newInstance(), (String[]) args.toArray(new String[args.size()]));
+		testcases.put(testName, tc);
+		current_testcase = tc;
             } catch (Exception ex) {
+            	ex.printStackTrace();
                 System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+ex.getMessage());
             }
 		} 
