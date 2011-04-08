@@ -11,8 +11,8 @@ fi
  
 for I in 1 2 3 ; do
    mkdir -p $DIR0/data$I
-   mongod --dbpath `dirname $0`/data$I  --rest --port 2000$I > logs/db-$I.log &
+   mongod --dbpath `dirname $0`/data$I  --rest --port 3000$I > logs/db-$I.log &
 done
 sleep 3
-mongos --port 20000  --chunkSize 1 --configdb localhost:20000 > logs/mongos.log &
+mongos --port 30000  --chunkSize 1 --configdb localhost:20000 > logs/mongos.log &
 echo Yeppie Kay Yay!

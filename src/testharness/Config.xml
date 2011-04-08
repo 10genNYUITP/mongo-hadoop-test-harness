@@ -20,9 +20,15 @@
 </testparams>
 
 <testcases>
-<test class="WordCount" args=""></test>
-<test class="WordCount" args="--use-query"></test>
+<test class="WordCountSplitTest" args="">
+<property name="mongo.input.uri" val="mongodb://localhost:30000"></property>
+<property name="mongo.output.uri" val="mongodb://localhost:30000"></property>
+</test>
+<test class="WordCountSplitTest" args="--use-query">
+<property name="mongo.input.uri" val="mongodb://localhost:30000"></property>
+<property name="mongo.output.uri" val="mongodb://localhost:30000"></property>
+</test>
 </testcases>
 
-<dbprops dbname="test" port="20000" path="/home/r_omio/mongodb-linux-i686-1.8.0/bin/mongodump"></dbprops>
+<dbprops dbname="test" port="30000" path="/home/r_omio/mongodb-linux-i686-1.8.0/bin/"></dbprops>
 </configuration>

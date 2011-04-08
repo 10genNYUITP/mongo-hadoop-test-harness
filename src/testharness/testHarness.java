@@ -10,6 +10,7 @@ public class testHarness{
 
     
     public static void main(String[] args) throws Exception{
+    	System.out.println("Entered harness");
         String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";	
         ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 				
@@ -23,6 +24,7 @@ public class testHarness{
             	makeArgs += listElements;
             }
             String collection = tname + "_" + makeArgs;
+            System.out.println("Collection is: " + collection);
             //^^^ This is not what you want. first of all this would put something like @[1234 in the string,
             //which is not what you want. Arrays.toString(cfrNew.args) would be better.  But this might not be
             //a valid mongo collection name.  You will probably have to create a method to get a collection name

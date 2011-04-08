@@ -60,16 +60,19 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		ConfigFileReader cfr = new ConfigFileReader();
 		cfr.parser = xr;
 		xr.parse(new InputSource(r));
+		System.out.println(cfr);
         return cfr;
 	}
 
 
 	@Override
 	public void startDocument() throws SAXException {
+		System.out.println("Strart document");
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
+		System.out.println("End document");
 	}
 
 
@@ -93,6 +96,8 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				}
 				testName = atts.getValue("class");
             try {
+            	Object o = Class.forName(testName).newInstance();
+            	System.out.println("Class "+o.getClass().getName()+" is a Tool: "+ (o instanceof Tool ));
 				TestCase tc = new TestCase((Tool) Class.forName(testName).newInstance(), (String[]) args.toArray(new String[args.size()]));
 				testcases.put(testName, tc);
             } catch (Exception ex) {
@@ -114,3 +119,4 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 	}
 }
+

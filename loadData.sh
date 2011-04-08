@@ -1,4 +1,4 @@
-/home/r_omio/mongodb-linux-i686-1.8.0/bin/mongo 127.0.0.1:20000/admin setup-shards.js
+/home/r_omio/mongodb-linux-i686-1.8.0/bin/mongo 127.0.0.1:30000/admin setup-shards.js
  
 if ! [ -f big.txt ] ; then
 #NOTE wgt should have an e after the w and before the gt (wiki filtering problem apparently)
@@ -14,4 +14,4 @@ perl -e 'while (<>) {  s/\"/\\"/g ; print }' < big.txt | sed 's/.*/  db.lines.in
 echo loaded
  
 #load data into database
-/home/r_omio/mongodb-linux-i686-1.8.0/bin/mongo 127.0.0.1:20000 big.js
+/home/r_omio/mongodb-linux-i686-1.8.0/bin/mongo 127.0.0.1:30000 big.js
