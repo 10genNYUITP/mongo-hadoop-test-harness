@@ -60,19 +60,15 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		xr.setFeature("http://apache.org/xml/features/validation/schema/augment-psvi", false);
 		ConfigFileReader cfr = new ConfigFileReader();
 		cfr.parser = xr;
-<<<<<<< HEAD
-        xr.setContentHandler(cfr);
-=======
-                xr.setContentHandler(cfr);
->>>>>>> c813fba40d3ab28d0e17728223951ec13fd970b5
+	        xr.setContentHandler(cfr);
 		xr.parse(new InputSource(r));
-        return cfr;
+	        return cfr;
 	}
 
 
 	@Override
 	public void startDocument() throws SAXException {
-		System.out.println("Strart document");
+		System.out.println("Start document");
 	}
 
 	@Override
