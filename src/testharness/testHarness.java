@@ -7,10 +7,23 @@ import com.mongodb.*;
 
 public class testHarness{
 	
-    String [] testcases = null;
     
     public static void main(String[] args) throws Exception{
-        String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";	
+        String fileName  = null;
+        for(int i = 0; i < args.length ; i++){
+            String argi = args[i];
+            if ("--config".equals(argi))
+                fileName = args[++i];
+            else{
+                System.err.println("unknown argument "+argi);
+                System.exit(1);
+            }
+        }
+        if (fileName == null){
+                System.err.println("must set config file");
+                System.exit(1);
+        }
+
         ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 				
         java.util.Iterator<Map.Entry<String, TestCase>> i1 = cfrNew.testcases.entrySet().iterator();
