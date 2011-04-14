@@ -3,12 +3,12 @@
 <testparams>
 <property name="mongo.splits.use-chunks">
     <val value="true"/>
-    <val value="false"/>
+    <val value="false" baseline="true"/>
 </property>
 
 <property name="mongo.splits.use-shards">
     <val value="true"/>
-    <val value="false"/>
+    <val value="false" baseline="true"/>
 </property>
 
 <property name="mongo.splits.slaveok">
