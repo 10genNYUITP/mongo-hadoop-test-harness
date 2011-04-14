@@ -12,6 +12,7 @@ class PropertyCycle {
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
     private PropertyCycle next; //next in chain
+    private String baseline; //If value matches this is the baseline for the test
 
     PropertyCycle(String name) {
         this.name = name;
@@ -26,6 +27,13 @@ class PropertyCycle {
         this.when = when;
     }
 
+    public void setBaseline(String baseline) {
+        if (this.baseline != null)
+            throw new IllegalStateException("Baseline is already set to \""+this.baseline+"\", it cannot be set to \""+baseline+"\"");
+        this.baseline = baseline;
+    }
+    
+
     void add(PropertyCycle pc) {
         if (next == null)
             next = pc;
@@ -37,25 +45,27 @@ class PropertyCycle {
     private boolean is_satifisifed(final org.apache.hadoop.conf.Configuration conf) {
         return vals.contains(conf.get(name));
     }
-
-    private void runTool(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
-    	if (next == null)
+    /** Either actually run the tool, or pass to the next PropertyCycle in the chain. */
+    private void runTool(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar) throws Exception {
+        if (next == null)
             tool.run(args);
         else
-            next.runTool(tool, args);
+            next.run(tool, args, baselineSoFar);
     }
-
+    /** Called externally on the first PropertyCycle */
     void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
+        run(tool, args, true);
+    }
+    private void run(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar) throws Exception {
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
         //If we have a when node only cycle through our values if then when node is satisfied.
         if (when != null && !when.is_satifisifed(conf))
-            runTool(tool, args);
+            runTool(tool, args, baselineSoFar);
         else
             for (String val : vals) {
                 //ideally clone conf and work with the clone, but I don't know if that is possible
                 conf.set(name, val);
-                runTool(tool, args);
+                runTool(tool, args, baselineSoFar && (val != null && val.equals(baseline)));
             }
     } //run()
-    //run()
 }
