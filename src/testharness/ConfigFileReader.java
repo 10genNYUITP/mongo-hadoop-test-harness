@@ -16,22 +16,32 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	private XMLReader parser;
 	List<TestCase> testcases = new ArrayList<TestCase>();
 	private TestCase current_testcase = null;
-	private String dbname;
-	private int dbport;
-	private String binpath;
-	static String testName; 
+	private static String dbname;
+	private static String dbout;
+	private static String collection;
+	private static int dbport;
+	private static String binpath;
+	static String testName;
 	List<String> args = new ArrayList<String>();
 	
 	public String getBinpath() {
-		return this.binpath;
+		return binpath;
 	}
 	
 	public String getDBName() {
-		return this.dbname;
+		return dbname;
+	}
+	
+	public String getDBOut() {
+		return dbout;
 	}
 	
 	public int getDBPort() {
-		return this.dbport;
+		return dbport;
+	}
+	
+	public String getCollection() {
+		return collection;
 	}
 	
 	public static String getTestName() {
@@ -131,11 +141,14 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+ex.getMessage());
 			}
 		} 
-		else if ("resultdb".equals(qName)) {
+		else if ("dbprops".equals(qName)) {
 			System.out.println("PARSING RESULTDB TAG");
 			dbname = atts.getValue("dbname");
+			dbout = atts.getValue("dbout");
+			collection = atts.getValue("collection");
 			dbport = Integer.parseInt(atts.getValue("port"));
 			binpath = atts.getValue("path");
+			System.out.println(binpath + " " + dbport);
 		}
 	}
 

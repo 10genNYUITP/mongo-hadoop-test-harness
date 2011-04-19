@@ -21,7 +21,7 @@ public class ResultStorage {
 
 	public void storeDB() throws UnknownHostException {
 		ConfigFileReader cfrRS = new ConfigFileReader();
-		DBAddress dba = new DBAddress("localhost", cfrRS.getDBPort(), cfrRS.getDBName());
+		DBAddress dba = new DBAddress("localhost", cfrRS.getDBPort(), cfrRS.getDBOut());
 		DB db = Mongo.connect(dba);
 		DBCollection coll = db.getCollection("output");
 		if (db.collectionExists("output")) 

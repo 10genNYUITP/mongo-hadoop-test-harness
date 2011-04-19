@@ -11,7 +11,7 @@ class PropertyCycle {
 
     private String propName;
     
-    private String testname;
+    //private String testname;
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
     private PropertyCycle next;
@@ -64,7 +64,8 @@ class PropertyCycle {
 			
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] dataBytes = new byte[10000];	
-            Process proc = Runtime.getRuntime().exec(cfr.getBinpath() + "mongodump -h localhost:" + cfr.getDBPort() + " -d " + cfr.getDBName() + "-o -");
+            System.out.println("bin path is:" + cfr.getBinpath() + " port is: " + cfr.getDBPort());
+            Process proc = Runtime.getRuntime().exec(cfr.getBinpath() + "mongodump -h localhost:" + cfr.getDBPort() + " -d " + cfr.getDBName() + " -c " + cfr.getCollection() + " -o -");
             BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
             int tempRead;
 			while((tempRead = bfrIS.read(dataBytes, 0, 9999)) > 0) {
