@@ -22,4 +22,3 @@ public class TestCase {
     	tool.getConf().set(key, value);
     }
 }
-

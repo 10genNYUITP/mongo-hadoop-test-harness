@@ -1,5 +1,6 @@
 
-import com.mongodb.hadoop.util.MongoTool;
+import java.io.BufferedInputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,14 +9,17 @@ import java.util.List;
  */
 class PropertyCycle {
 
-    private String name;
+    private String propName;
+    
+    private String testname;
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
-    private PropertyCycle next; //next in chain
-    private String baseline; //If value matches this is the baseline for the test
+    private PropertyCycle next;
+    private String baseline;
+    String cC, sC;
 
     PropertyCycle(String name) {
-        this.name = name;
+        this.propName = name;
     }
 
     public void addValue(String... v) {
@@ -32,8 +36,6 @@ class PropertyCycle {
             throw new IllegalStateException("Baseline is already set to \""+this.baseline+"\", it cannot be set to \""+baseline+"\"");
         this.baseline = baseline;
     }
-    
-
     void add(PropertyCycle pc) {
         if (next == null)
             next = pc;
@@ -43,29 +45,67 @@ class PropertyCycle {
 
     /** for when nodes */
     private boolean is_satifisifed(final org.apache.hadoop.conf.Configuration conf) {
-        return vals.contains(conf.get(name));
+        return vals.contains(conf.get(propName));
     }
-    /** Either actually run the tool, or pass to the next PropertyCycle in the chain. */
-    private void runTool(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar) throws Exception {
-        if (next == null)
+
+    private void runTool(org.apache.hadoop.util.Tool tool, String[] args) throws Exception { // runTool(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar)
+    	if (next == null) {
+    		ConfigFileReader cfr = new ConfigFileReader(); 
+    		final long start = System.currentTimeMillis();  
+    		
+    		
             tool.run(args);
-        else
-            next.run(tool, args, baselineSoFar);
+            
+            
+            final long end = System.currentTimeMillis();
+            final double runtime = ((double)(end - start))/1000;
+            java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
+            nf.setMaximumFractionDigits(3);
+			
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] dataBytes = new byte[10000];	
+            Process proc = Runtime.getRuntime().exec(cfr.getBinpath() + "mongodump -h localhost:" + cfr.getDBPort() + " -d " + cfr.getDBName() + "-o -");
+            BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
+            int tempRead;
+			while((tempRead = bfrIS.read(dataBytes, 0, 9999)) > 0) {
+                md.update(dataBytes);
+            }
+            bfrIS.close();
+
+            byte[] mdbytes = md.digest();
+            StringBuilder sb = new StringBuilder();
+            String md5sum = null;
+            for (int j = 0; j < mdbytes.length; j++){
+                sb.append(Integer.toString((mdbytes[j] & 0xff) + 0x100, 16).substring(1));
+                md5sum = sb.toString();
+            }
+            System.out.println("MD5: " + md5sum); 
+            for(String str : args) {
+            	System.out.println(str);
+            }
+            
+            ResultStorage resultObj = new ResultStorage();
+            resultObj.name = ConfigFileReader.getTestName();
+            resultObj.args = args;
+            resultObj.performance = runtime;
+            resultObj.md5 = md5sum;
+            resultObj.chunksCondition = cC;
+            resultObj.splitsCondition = sC;
+            
+            ResultStorage.addResults(resultObj);
+            
+    	} else
+            next.runTool(tool, args);	// next.run(tool, args, baselineSoFar);
     }
-    /** Called externally on the first PropertyCycle */
-    void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
-        run(tool, args, true);
-    }
-    private void run(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar) throws Exception {
+
+    void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {	// run(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar)
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
-        //If we have a when node only cycle through our values if then when node is satisfied.
         if (when != null && !when.is_satifisifed(conf))
-            runTool(tool, args, baselineSoFar);
+            runTool(tool, args);	// runTool(tool, args, baselineSoFar);
         else
             for (String val : vals) {
-                //ideally clone conf and work with the clone, but I don't know if that is possible
-                conf.set(name, val);
-                runTool(tool, args, baselineSoFar && (val != null && val.equals(baseline)));
+                conf.set(propName, val);
+                runTool(tool, args);	// runTool(tool, args, baselineSoFar && (val != null && val.equals(baseline)));
             }
-    } //run()
+    }
 }

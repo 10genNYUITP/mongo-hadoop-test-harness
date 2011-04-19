@@ -12,7 +12,7 @@
 </property>
 
 <property name="mongo.splits.slaveok">
-    <when property="mongo.splits.use-shards" val="true">
+    <when name="mongo.splits.use-shards" val="true">
     <val value="true"/>
     <val value="false"/>
     </when>
@@ -21,14 +21,16 @@
 
 <testcases>
 <test class="WordCountSplitTest" args="">
-<property name="mongo.input.uri" val="mongodb://localhost:30000"></property>
-<property name="mongo.output.uri" val="mongodb://localhost:30000"></property>
+<property name="mongo.input.uri" val="mongodb://localhost:30000/test.lines"></property>
+<property name="mongo.output.uri" val="mongodb://localhost:30000/test.temp_out"></property>
 </test>
 <test class="WordCountSplitTest" args="--use-query">
-<property name="mongo.input.uri" val="mongodb://localhost:30000"></property>
-<property name="mongo.output.uri" val="mongodb://localhost:30000"></property>
+<property name="mongo.input.uri" val="mongodb://localhost:30000/test.lines"></property>
+<property name="mongo.output.uri" val="mongodb://localhost:30000/test.temp_out"></property>
 </test>
 </testcases>
 
-<dbprops dbname="test" port="30000" path="/home/r_omio/mongodb-linux-i686-1.8.0/bin/"></dbprops>
+<resultdb dbname="results" port="30000" path="/home/r_omio/mongodb-src/"></resultdb>
 </configuration>
+
+
