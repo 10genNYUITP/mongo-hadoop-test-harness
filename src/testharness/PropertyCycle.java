@@ -2,7 +2,9 @@
 import java.io.BufferedInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * this class represents property values to cycle through when running tests
@@ -11,7 +13,6 @@ class PropertyCycle {
 
     private String propName;
     
-    //private String testname;
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
     private PropertyCycle next;
@@ -20,6 +21,14 @@ class PropertyCycle {
 
     PropertyCycle(String name) {
         this.propName = name;
+    }
+    public String toString(){
+         StringBuilder sb = new StringBuilder();
+         sb.append("{"+propName+",vals="+vals);
+         if (next != null)
+        	 sb.append(",next="+next);
+         sb.append("}");
+		return sb.toString();
     }
 
     public void addValue(String... v) {
@@ -48,8 +57,14 @@ class PropertyCycle {
         return vals.contains(conf.get(propName));
     }
 
-    private void runTool(org.apache.hadoop.util.Tool tool, String[] args) throws Exception { // runTool(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar)
+    private void runTool(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams, boolean baselineSoFar) throws Exception {
     	if (next == null) {
+    		if(true){
+    			System.out.println("runn test case, setParams is: "+setParams);
+    			return ;
+    		}
+    		
+    		
     		ConfigFileReader cfr = new ConfigFileReader(); 
     		final long start = System.currentTimeMillis();  
     		
@@ -96,17 +111,21 @@ class PropertyCycle {
             ResultStorage.addResults(resultObj);
             
     	} else
-            next.runTool(tool, args);	// next.run(tool, args, baselineSoFar);
+            next.runTool(tool, args, setParams, baselineSoFar);
     }
 
-    void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {	// run(org.apache.hadoop.util.Tool tool, String[] args, boolean baselineSoFar)
+    void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {	
+    	run(tool,args,new HashMap<String, String>(), true);
+    }
+    private void run(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams,  boolean baselineSoFar) throws Exception{
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
         if (when != null && !when.is_satifisifed(conf))
-            runTool(tool, args);	// runTool(tool, args, baselineSoFar);
+            runTool(tool, args, setParams, baselineSoFar);
         else
             for (String val : vals) {
                 conf.set(propName, val);
-                runTool(tool, args);	// runTool(tool, args, baselineSoFar && (val != null && val.equals(baseline)));
+                setParams.put(propName, val);
+                runTool(tool, args, setParams, baselineSoFar && (val != null && val.equals(baseline)));
             }
     }
 }

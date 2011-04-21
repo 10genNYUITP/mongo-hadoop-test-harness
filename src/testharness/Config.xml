@@ -30,7 +30,7 @@
 </test>
 </testcases>
 
-<dbprops dbname="test" collection="temp_out" dbout="results" port="30000" path="/home/r_omio/mongodb-src/"></dbprops>
+<dbprops dbname="test" collection="temp_out" dbout="results" port="30000" path="/home/rushin/mongodb-src/ - "></dbprops>
 </configuration>
 
 

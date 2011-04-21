@@ -99,14 +99,15 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 
 	@Override
 	public void endDocument() throws SAXException {
-		System.out.println("End document");
+		System.out.println("End document, pc is: "+propertyCycle);
 	}
 
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		if ("property".equals(qName)){
-			System.out.println("PARSING PROPERTY TAG");
+			System.out.println("PARSING PROPERTY TAG1");
+			System.out.println("INSIDE PROPERTY");
 			if (current_testcase == null){
 				PropertyHandler ph = new PropertyHandler();
 				ph.parent = this;
@@ -117,13 +118,14 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				else
 					propertyCycle.add(ph.pc);
 			} else {
-				System.out.println("PARSING THE VALUES OF PROPERTY TAG");
+				System.out.println("PARSING THE VALUES OF PROPERTY TAG1");
 				System.out.println(atts.getValue("name") + atts.getValue("val"));
 				current_testcase.setProperty(atts.getValue("name"), atts.getValue("val"));
 			}
 		}
 		else if ("test".equals(qName)) {
 			System.out.println("PARSING TEST TAG");
+			System.out.println("INSIDE TEST");
 			String argument = atts.getValue("args");
 			StringTokenizer stz = new StringTokenizer(argument);
 			while(stz.hasMoreTokens()) {
@@ -142,7 +144,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 			}
 		} 
 		else if ("dbprops".equals(qName)) {
-			System.out.println("PARSING RESULTDB TAG");
+			System.out.println("PARSING RESULTDB TAG1");
 			dbname = atts.getValue("dbname");
 			dbout = atts.getValue("dbout");
 			collection = atts.getValue("collection");

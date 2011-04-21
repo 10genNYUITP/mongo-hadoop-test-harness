@@ -14,7 +14,7 @@ public class ResultStorage {
 	String md5;
 	String splitsCondition;
 	String chunksCondition;
-
+	String slaveokCondition;
 	public static void addResults(ResultStorage rst) {
 		objs.add(rst);
 	}
@@ -34,6 +34,8 @@ public class ResultStorage {
 			doc.append("MD5 Checksum", rst.md5);
 			doc.append("Chunks-OK?", rst.chunksCondition);
 			doc.append("Splits-OK?", rst.splitsCondition);
+			doc.append("Slave-OK?", rst.slaveokCondition);
+			
 		} 
 		coll.insert(doc);
 	}

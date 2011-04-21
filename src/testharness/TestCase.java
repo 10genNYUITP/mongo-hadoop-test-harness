@@ -1,4 +1,6 @@
 
+import java.util.Arrays;
+
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -14,7 +16,9 @@ public class TestCase {
     	this.tool = tool;
     	this.args = args;
     }
-    
+    public String toString(){
+    	return "{"+tool.getClass()+",args="+Arrays.toString(args)+"}";
+    }
     void runTest(PropertyCycle pc) throws Exception{
         pc.run(tool, args);
     }
@@ -22,3 +26,5 @@ public class TestCase {
     	tool.getConf().set(key, value);
     }
 }
+
+//Create another class property value and store property values over here or not.. And store all values from configFileReader or not.

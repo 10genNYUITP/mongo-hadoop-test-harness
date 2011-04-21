@@ -6,7 +6,9 @@ public class TestHarness {
 	String [] testcases = null;
 
 	public static void main(String[] args) throws Exception{
-		String fileName = null;
+
+		String fileName;
+		
 		for(int i = 0; i < args.length ; i++){
 			String argi = args[i];
 			if ("--config".equals(argi))
