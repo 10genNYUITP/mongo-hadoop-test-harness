@@ -6,13 +6,8 @@ public class TestHarness {
 	String [] testcases = null;
 
 	public static void main(String[] args) throws Exception{
-<<<<<<< HEAD
 		String fileName =  "/home/rushin/mongo-test-harness-eclipse/src/testharness/Config.xml";
-=======
-
-		String fileName;
->>>>>>> 4b771e631fd5709d1d71b0a319460398e0db6016
-		
+		//String fileName="";
 		for(int i = 0; i < args.length ; i++){
 			String argi = args[i];
 			if ("--config".equals(argi))

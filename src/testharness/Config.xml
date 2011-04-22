@@ -15,7 +15,7 @@
     <when name="mongo.splits.use-shards" val="true" />
     <val value="true"/>
     <val value="false"/>
-    </when>
+
 </property>
 </testparams>
 
