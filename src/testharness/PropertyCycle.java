@@ -58,10 +58,21 @@ class PropertyCycle {
     }
 
     private void runTool(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams, boolean baselineSoFar) throws Exception {
+<<<<<<< HEAD
+
+	    StringBuilder indent = new StringBuilder();
+	    for(int i = 0; i < setParams.size(); i++)
+	    	indent.append(" ");
+    	if (next == null) {
+    		if(true){
+    			System.out.println(indent+"I am "+this+" next is null, RUNNING TEST CASE, setParams is: "+setParams);
+    			//return ;
+=======
     	if (next == null) {
     		if(true){
     			System.out.println("runn test case, setParams is: "+setParams);
     			return ;
+>>>>>>> 4b771e631fd5709d1d71b0a319460398e0db6016
     		}
     		
     		
@@ -110,8 +121,15 @@ class PropertyCycle {
             
             ResultStorage.addResults(resultObj);
             
+<<<<<<< HEAD
+    	} else{
+    		System.out.println(indent+"I am "+this+" running next pc: "+next);
+            next.run(tool, args, setParams, baselineSoFar);
+    	}
+=======
     	} else
             next.runTool(tool, args, setParams, baselineSoFar);
+>>>>>>> 4b771e631fd5709d1d71b0a319460398e0db6016
     }
 
     void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {	
@@ -119,12 +137,24 @@ class PropertyCycle {
     }
     private void run(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams,  boolean baselineSoFar) throws Exception{
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
+<<<<<<< HEAD
+        setParams = new HashMap<String, String>(setParams);
+        if (when != null && !when.is_satifisifed(conf)){
+        	System.out.println("when not satisfied, calling runTool()");
+            runTool(tool, args, setParams, baselineSoFar);
+        }else
+            for (String val : vals) {
+                conf.set(propName, val);
+                setParams.put(propName, val);
+                System.out.println("     I am "+propName+" calling RunTool");
+=======
         if (when != null && !when.is_satifisifed(conf))
             runTool(tool, args, setParams, baselineSoFar);
         else
             for (String val : vals) {
                 conf.set(propName, val);
                 setParams.put(propName, val);
+>>>>>>> 4b771e631fd5709d1d71b0a319460398e0db6016
                 runTool(tool, args, setParams, baselineSoFar && (val != null && val.equals(baseline)));
             }
     }

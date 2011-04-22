@@ -12,7 +12,7 @@
 </property>
 
 <property name="mongo.splits.slaveok">
-    <when name="mongo.splits.use-shards" val="true">
+    <when name="mongo.splits.use-shards" val="true" />
     <val value="true"/>
     <val value="false"/>
     </when>
@@ -30,7 +30,7 @@
 </test>
 </testcases>
 
-<dbprops dbname="test" collection="temp_out" dbout="results" port="30000" path="/home/rushin/mongodb-src/ - "></dbprops>
+<dbprops dbname="test" collection="temp_out" dbout="results" port="30000" path="/home/rushin/mongodb-src/"></dbprops>
 </configuration>
 
 
