@@ -6,8 +6,7 @@ public class TestHarness {
 	String [] testcases = null;
 
 	public static void main(String[] args) throws Exception{
-		String fileName =  "/home/rushin/mongo-test-harness-eclipse/src/testharness/Config.xml";
-		//String fileName="";
+		String fileName="";
 		for(int i = 0; i < args.length ; i++){
 			String argi = args[i];
 			if ("--config".equals(argi))
@@ -24,11 +23,10 @@ public class TestHarness {
 
 		ConfigFileReader cfrNew = ConfigFileReader.parse(new FileReader(fileName));
 
-		System.out.println("# OF THE TESCASES MAP: " + cfrNew.testcases.size());
 		for(TestCase tstc : cfrNew.testcases) {
-			System.out.println("test harness: RUNNING TEST CASE: " + tstc);
 			tstc.runTest(cfrNew.propertyCycle);
 		}
-        //(new ResultStorage()).storeDB();
+        (new ResultStorage()).storeDB();
+        (new GenerateXML()).generate();
 	}
 }
