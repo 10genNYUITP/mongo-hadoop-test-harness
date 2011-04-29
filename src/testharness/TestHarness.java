@@ -27,7 +27,6 @@ public class TestHarness {
 		for(TestCase tstc : cfrNew.testcases) {
 			tstc.runTest(cfrNew.propertyCycle);
 		}
-        (new ResultStorage()).storeDB();
         (new GenerateXML()).generate();
 	}
 }

@@ -16,16 +16,23 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	private XMLReader parser;
 	List<TestCase> testcases = new ArrayList<TestCase>();
 	private TestCase current_testcase = null;
-	/*private static String dbname;
-	private static String dbout;
-	private static String collection;
-	private static int dbport;*/
-	static String binpath;
-	static String testName;
+	private String binpath;
+	private String testName;
+	private String resultsdb;
 	List<String> args = new ArrayList<String>();
+	private String dumppath;
 
-	com.mongodb.MongoURI getResultURI(){
-		throw new UnsupportedOperationException("not done yet");
+	public com.mongodb.MongoURI getResultURI(){
+		com.mongodb.MongoURI resultsuri = new com.mongodb.MongoURI(resultsdb); 
+		return resultsuri;
+	}
+
+	public String getBinpath() {
+		return binpath;
+	}
+
+	public String getDumpPath() {
+		return dumppath;
 	}
 
 	class PropertyHandler extends org.xml.sax.ext.DefaultHandler2{
@@ -117,12 +124,12 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+ex.getMessage());
 			}
 		} 
-		else if ("dbprops".equals(qName)) {
-			/*dbname = atts.getValue("dbname");
-			dbout = atts.getValue("dbout");
-			collection = atts.getValue("collection");
-			dbport = Integer.parseInt(atts.getValue("port"));*/
+		else if ("resultsdb".equals(qName)) {
+			resultsdb = atts.getValue("resultsdb");
+		}
+		else if("paths".equals(qName)) {
 			binpath = atts.getValue("path");
+			dumppath = atts.getValue("dumppath");
 		}
 	}
 

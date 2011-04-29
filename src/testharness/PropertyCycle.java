@@ -92,9 +92,9 @@ class PropertyCycle {
 			java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
 			nf.setMaximumFractionDigits(3);
 
-			String md5sum = extracted(cfr.binpath, outputUri);
+			String md5sum = extracted(cfr.getBinpath(), outputUri);
 			if (true){ //debug code
-				String md2 = extracted(cfr.binpath, outputUri);
+				String md2 = extracted(cfr.getBinpath(), outputUri);
 				System.out.println("first md5sum: "+md5sum+" 2nd: "+md2);
 			}
 			/*FileReader fr = new FileReader("/home/rushin/mongo-test-harness-eclipse/dump/" + cfr.getDBName() + ".bson");
@@ -109,37 +109,46 @@ class PropertyCycle {
 			for(String str : args) {
 				System.out.println(str);
 			}
+			GenerateXML gx = new GenerateXML();
 			BasicDBObject resultDoc = new BasicDBObject();
-			resultDoc.append("Name", tool.getClass().getName());
-			resultDoc.append("Arguments", args);
-			resultDoc.append("Performace", runtime);
-			resultDoc.append("seconds", runtime);
-			resultDoc.append("MD5 Checksum", md5sum);
-			resultDoc.append("count", getCount(outputUri));
+			resultDoc.append("Name", tool.getClass().getName()); 
+			gx.setName(tool.getClass().getName()); 
+			resultDoc.append("Arguments", args); 
+			gx.setArgs(args);
+			resultDoc.append("Runtime", runtime); 
+			gx.setRuntime(runtime);
+			resultDoc.append("MD5 Checksum", md5sum); 
+			gx.setMD5(md5sum);
+			resultDoc.append("Count", getCount(outputUri)); 
+			gx.setCount(getCount(outputUri)); 
 			//todo: store byte size here
-			resultDoc.append("params", new BasicDBObject(setParams));
-			resultDoc.append("starttime", new java.util.Date(start));
+			resultDoc.append("Params", new BasicDBObject(setParams)); 
+			gx.setParams(setParams);
+			resultDoc.append("Start Time", new java.util.Date(start)); 
+			gx.setStart(new java.util.Date(start)); 
 			if (baselineSoFar)
-				resultDoc.append("baseline", Boolean.TRUE);
+				resultDoc.append("Baseline", Boolean.TRUE); 
+				gx.setBaseline(Boolean.TRUE);
 			storeResults(resultDoc);
+			gx.addResults();
 
-		} else{
+		} else {
 			next.run(tool, args, setParams, baselineSoFar);
 		}
 	}
-	private void storeResults (BasicDBObject ResultDoc ) throws MongoException, UnknownHostException{
-		com.mongodb.MongoURI uri =  cfr.getResultURI();// TODO: get MongoURI from cfr here
+	private void storeResults (BasicDBObject ResultDoc) throws MongoException, UnknownHostException{
+		com.mongodb.MongoURI uri =  cfr.getResultURI();
 		Mongo mongo = new Mongo(uri);
 		try{
 			DB db = mongo.getDB(uri.getDatabase());
 			DBCollection coll = db.getCollection(uri.getCollection());
 			coll.insert(ResultDoc);
-		}finally{
-			if (mongo != null)
+		} finally {
+			if(mongo != null)
 				mongo.close();
 		}
 	}
-	private void dropOldCollection( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException	{
+	private void dropOldCollection(com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException	{
 		Mongo mongo = new Mongo(outputUri);
 		try{
 			DB db = mongo.getDB(outputUri.getDatabase());
@@ -156,10 +165,7 @@ class PropertyCycle {
 	private long getCount( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException	{
 		Mongo mongo = new Mongo(outputUri);
 		try{
-
-
 			DB db = mongo.getDB(outputUri.getDatabase());
-
 			if (db.collectionExists(outputUri.getCollection())) {
 				DBCollection coll = db.getCollection(outputUri.getCollection());
 				return coll.count();
@@ -178,7 +184,7 @@ class PropertyCycle {
 		assert hosts.size() == 1;
 		String hostname = hosts.get(0);
 		String commandString = binpath + "mongodump -h "+hostname+":"  + " -d " + outputUri.getDatabase()
-		+" -c "+ outputUri.getCollection()+ " -o -";
+		+" -c "+ outputUri.getCollection()+ " -o -"; // + cfr.getDumpPath();
 		System.out.println("running: "+commandString);
 		Process proc = Runtime.getRuntime().exec(commandString);
 		BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
@@ -224,7 +230,7 @@ class PropertyCycle {
 			}
 		}
 	}
-	private boolean shardsCondition(Map<String, String> s) { //can we get rid of this?
+	private boolean shardsCondition(Map<String, String> s) {
 		java.util.Iterator it = s.entrySet().iterator();
 		while(it.hasNext()) {
 			Map.Entry me = (Map.Entry)it.next();
