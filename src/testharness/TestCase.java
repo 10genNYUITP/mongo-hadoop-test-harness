@@ -3,10 +3,6 @@ import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
 
-/**
- * Created: Mar 28, 2011  10:56:01 PM
- *
- */
 public class TestCase {
     private org.apache.hadoop.util.Tool tool;
     private String [] args;
@@ -26,5 +22,3 @@ public class TestCase {
     	tool.getConf().set(key, value);
     }
 }
-
-//Create another class property value and store property values over here or not.. And store all values from configFileReader or not.

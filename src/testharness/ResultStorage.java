@@ -12,9 +12,10 @@ public class ResultStorage {
 	String [] args; 
 	Double performance;
 	String md5;
-	String splitsCondition;
+	String shardsCondition;
 	String chunksCondition;
-	String slaveokCondition;
+	String slaveOK;
+
 	public static void addResults(ResultStorage rst) {
 		objs.add(rst);
 	}
@@ -26,17 +27,20 @@ public class ResultStorage {
 		DBCollection coll = db.getCollection("output");
 		if (db.collectionExists("output")) 
 			coll.drop();
-		BasicDBObject doc = new BasicDBObject();
+		coll = db.getCollection("output");
+		int i = 0;
 		for(ResultStorage rst : objs) {
+			System.out.println("Object:" + ++i);
+			BasicDBObject doc = new BasicDBObject();
 			doc.append("Name", rst.name);
 			doc.append("Arguments", rst.args);
 			doc.append("Performace", rst.performance);
 			doc.append("MD5 Checksum", rst.md5);
 			doc.append("Chunks-OK?", rst.chunksCondition);
-			doc.append("Splits-OK?", rst.splitsCondition);
-			doc.append("Slave-OK?", rst.slaveokCondition);
-			
+			doc.append("Splits-OK?", rst.shardsCondition);
+			doc.append("Splits-OK?", rst.slaveOK);
+			coll.insert(doc);
+			//System.out.println(rst.name + " " + rst.args + " " + rst.performance + " " + rst.md5 + " " + rst.shardsCondition + " " + rst.chunksCondition + " " + rst.slaveOK);
 		} 
-		coll.insert(doc);
 	}
 }
