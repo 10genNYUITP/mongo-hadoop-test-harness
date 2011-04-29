@@ -1,6 +1,10 @@
-Please change all the pathnames to match your environment.
+To run this example:
 
-Please also make sure the following:
-1) Mongo server is up and running
-2) For WordCountSplitTest: startServer.sh, loadData.sh and setClasspath.sh scripts need to run beforehand
-3) For other tests make sure you make appropriate changes to the above scripts or write new ones
+edit set-env.sh
+compile WordCountSplitTest.java
+
+run:
+
+start-servers.sh
+load-data.sh
+java WordCountSplitTest
