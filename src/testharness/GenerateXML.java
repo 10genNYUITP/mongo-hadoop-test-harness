@@ -64,7 +64,7 @@ public class GenerateXML {
 			TransformerFactory tf = TransformerFactory.newInstance();
 			Transformer t = tf.newTransformer();
 			DOMSource src = new DOMSource(doc);
-			StreamResult result =  new StreamResult(new File("/home/r_omio/mongo-hadoop-test-harness/mongoresults.xml"));
+			StreamResult result =  new StreamResult(new File("/home/rushin/mongoresults.xml"));
 			t.transform(src, result);
 			
 		} catch(ParserConfigurationException pce) {

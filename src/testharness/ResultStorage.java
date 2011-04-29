@@ -37,7 +37,7 @@ public class ResultStorage {
 			doc.append("Performace", rst.performance);
 			doc.append("MD5 Checksum", rst.md5);
 			doc.append("Chunks-OK?", rst.chunksCondition);
-			doc.append("Splits-OK?", rst.shardsCondition);
+			doc.append("Shards-OK?", rst.shardsCondition);
 			doc.append("Splits-OK?", rst.slaveOK);
 			coll.insert(doc);
 			//System.out.println(rst.name + " " + rst.args + " " + rst.performance + " " + rst.md5 + " " + rst.shardsCondition + " " + rst.chunksCondition + " " + rst.slaveOK);

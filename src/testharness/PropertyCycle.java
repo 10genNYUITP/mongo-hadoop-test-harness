@@ -1,21 +1,38 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
+
+import org.apache.hadoop.conf.Configuration;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBAddress;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.hadoop.util.MongoConfigUtil;
 
 class PropertyCycle {
 
 	private String propName;
+	private ConfigFileReader cfr;
 
 	private List<String> vals = new ArrayList<String>();
 	private PropertyCycle when;
 	private PropertyCycle next;
 	private String baseline;
-	String uShards = "FALSE";
+	String uShards = "FALSE"; //can we delete these?
 	String uChunks = "FALSE";
 	String sOk = "FALSE";
 
-	PropertyCycle(String name) {
+	PropertyCycle(ConfigFileReader cfr, String name) {
+		this.cfr = cfr;
 		this.propName = name;
 	}
 	public String toString(){
@@ -55,11 +72,15 @@ class PropertyCycle {
 
 	private void runTool(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams, boolean baselineSoFar) throws Exception {
 
+
+		final Configuration conf = tool.getConf();
+		final com.mongodb.MongoURI outputUri =  MongoConfigUtil.getOutputURI( conf);
+
 		StringBuilder indent = new StringBuilder();
-		for(int i = 0; i < setParams.size(); i++)
-			indent.append("    ");
 		if (next == null) {
-			ConfigFileReader cfr = new ConfigFileReader();
+			dropOldCollection(outputUri);
+
+
 			final long start = System.currentTimeMillis();
 
 
@@ -71,55 +92,110 @@ class PropertyCycle {
 			java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
 			nf.setMaximumFractionDigits(3);
 
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] dataBytes = new byte[10000];
-			Process proc = Runtime.getRuntime().exec(cfr.getBinpath() + "mongodump -h localhost:" + cfr.getDBPort() + " -d " + cfr.getDBName() + " -c " + cfr.getCollection() + " -o -");
-			BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
-			int tempRead;
-			while((tempRead = bfrIS.read(dataBytes, 0, 9999)) > 0) {
-				md.update(dataBytes);
+			String md5sum = extracted(cfr.binpath, outputUri);
+			if (true){ //debug code
+				String md2 = extracted(cfr.binpath, outputUri);
+				System.out.println("first md5sum: "+md5sum+" 2nd: "+md2);
 			}
-			bfrIS.close();
+			/*FileReader fr = new FileReader("/home/rushin/mongo-test-harness-eclipse/dump/" + cfr.getDBName() + ".bson");
+			BufferedReader tbfr = new BufferedReader(fr);
 
-			byte[] mdbytes = md.digest();
-			StringBuilder sb = new StringBuilder();
-			String md5sum = null;
-			for (int j = 0; j < mdbytes.length; j++){
-				sb.append(Integer.toString((mdbytes[j] & 0xff) + 0x100, 16).substring(1));
-				md5sum = sb.toString();
-			}
+			String line;
+			while((line = tbfr.readLine()) != null) {
+				md.update(dataBytes, 0, line.length());
+			} */
+
 			System.out.println("MD5: " + md5sum);
 			for(String str : args) {
 				System.out.println(str);
 			}
-
-			java.util.Iterator<?> it = setParams.entrySet().iterator();
-
-			while(it.hasNext()) {
-				Map.Entry me = (Map.Entry) it.next();
-				if(me.getKey().equals("mongo.splits.use-chunks")) {
-					uChunks = (String) me.getValue();
-				} else if (me.getKey().equals("mongo.splits.use-shards")) {
-					uShards = (String) me.getValue();
-				} else {
-					sOk = (String) me.getValue();
-				}
-			}
-
-			ResultStorage resultObj = new ResultStorage();
-			resultObj.name = ConfigFileReader.getTestName();
-			resultObj.args = args;
-			resultObj.performance = runtime;
-			resultObj.md5 = md5sum;
-			resultObj.chunksCondition = uChunks;
-			resultObj.shardsCondition = uShards;
-			resultObj.slaveOK = sOk;
-
-			ResultStorage.addResults(resultObj);
+			BasicDBObject resultDoc = new BasicDBObject();
+			resultDoc.append("Name", tool.getClass().getName());
+			resultDoc.append("Arguments", args);
+			resultDoc.append("Performace", runtime);
+			resultDoc.append("seconds", runtime);
+			resultDoc.append("MD5 Checksum", md5sum);
+			resultDoc.append("count", getCount(outputUri));
+			//todo: store byte size here
+			resultDoc.append("params", new BasicDBObject(setParams));
+			resultDoc.append("starttime", new java.util.Date(start));
+			if (baselineSoFar)
+				resultDoc.append("baseline", Boolean.TRUE);
+			storeResults(resultDoc);
 
 		} else{
 			next.run(tool, args, setParams, baselineSoFar);
 		}
+	}
+	private void storeResults (BasicDBObject ResultDoc ) throws MongoException, UnknownHostException{
+		com.mongodb.MongoURI uri =  cfr.getResultURI();// TODO: get MongoURI from cfr here
+		Mongo mongo = new Mongo(uri);
+		try{
+			DB db = mongo.getDB(uri.getDatabase());
+			DBCollection coll = db.getCollection(uri.getCollection());
+			coll.insert(ResultDoc);
+		}finally{
+			if (mongo != null)
+				mongo.close();
+		}
+	}
+	private void dropOldCollection( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException	{
+		Mongo mongo = new Mongo(outputUri);
+		try{
+			DB db = mongo.getDB(outputUri.getDatabase());
+
+			if (db.collectionExists(outputUri.getCollection())) {
+				DBCollection coll = db.getCollection(outputUri.getCollection());
+				coll.drop();
+			}
+		}finally{
+			if (mongo != null)
+				mongo.close();
+		}
+	}
+	private long getCount( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException	{
+		Mongo mongo = new Mongo(outputUri);
+		try{
+
+
+			DB db = mongo.getDB(outputUri.getDatabase());
+
+			if (db.collectionExists(outputUri.getCollection())) {
+				DBCollection coll = db.getCollection(outputUri.getCollection());
+				return coll.count();
+			}
+		}finally{
+			if (mongo != null)
+				mongo.close();
+		}
+		return -1;
+	}
+	private String extracted( String binpath, com.mongodb.MongoURI outputUri)
+	throws NoSuchAlgorithmException, IOException {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		byte[] dataBytes = new byte[10000];
+		List<String> hosts = outputUri.getHosts();
+		assert hosts.size() == 1;
+		String hostname = hosts.get(0);
+		String commandString = binpath + "mongodump -h "+hostname+":"  + " -d " + outputUri.getDatabase()
+		+" -c "+ outputUri.getCollection()+ " -o -";
+		System.out.println("running: "+commandString);
+		Process proc = Runtime.getRuntime().exec(commandString);
+		BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
+		int tempRead;
+		while((tempRead = bfrIS.read(dataBytes, 0, 9999)) > 0) {
+			md.update(dataBytes, 0, tempRead);
+		}
+		bfrIS.close();
+
+		byte[] mdbytes = md.digest();
+		StringBuilder sb = new StringBuilder();
+		String md5sum = null;
+		for (int j = 0; j < mdbytes.length; j++){
+			sb.append(Integer.toString((mdbytes[j] & 0xff) + 0x100, 16).substring(1));
+			md5sum = sb.toString();
+		}
+		return md5sum;
 	}
 
 	void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
@@ -131,14 +207,14 @@ class PropertyCycle {
 
 		if ((when != null) && !when.is_satifisifed(conf)){
 			if(shardsCondition(setParams)) {
-					for(String val : vals) {
-						conf.set(propName, val);
-						setParams.put(propName, val);
-						runTool(tool, args, setParams, baselineSoFar);
-					}
-				} else {
+				for(String val : vals) {
+					conf.set(propName, val);
+					setParams.put(propName, val);
 					runTool(tool, args, setParams, baselineSoFar);
 				}
+			} else {
+				runTool(tool, args, setParams, baselineSoFar);
+			}
 		}
 		else{
 			for (String val : vals) {
@@ -148,12 +224,12 @@ class PropertyCycle {
 			}
 		}
 	}
-	private boolean shardsCondition(Map<String, String> s) {
+	private boolean shardsCondition(Map<String, String> s) { //can we get rid of this?
 		java.util.Iterator it = s.entrySet().iterator();
 		while(it.hasNext()) {
-		Map.Entry me = (Map.Entry)it.next();
-		if(me.getKey().equals("mongo.splits.use-shards") && me.getValue().equals("true")) 
-			return true;
+			Map.Entry me = (Map.Entry)it.next();
+			if(me.getKey().equals("mongo.splits.use-shards") && me.getValue().equals("true")) 
+				return true;
 		}
 		return false;
 	}

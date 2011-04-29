@@ -16,36 +16,16 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	private XMLReader parser;
 	List<TestCase> testcases = new ArrayList<TestCase>();
 	private TestCase current_testcase = null;
-	private static String dbname;
+	/*private static String dbname;
 	private static String dbout;
 	private static String collection;
-	private static int dbport;
-	private static String binpath;
+	private static int dbport;*/
+	static String binpath;
 	static String testName;
 	List<String> args = new ArrayList<String>();
 
-	public String getBinpath() {
-		return binpath;
-	}
-
-	public String getDBName() {
-		return dbname;
-	}
-
-	public String getDBOut() {
-		return dbout;
-	}
-
-	public int getDBPort() {
-		return dbport;
-	}
-
-	public String getCollection() {
-		return collection;
-	}
-
-	public static String getTestName() {
-		return testName;
+	com.mongodb.MongoURI getResultURI(){
+		throw new UnsupportedOperationException("not done yet");
 	}
 
 	class PropertyHandler extends org.xml.sax.ext.DefaultHandler2{
@@ -56,14 +36,16 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			depth++;
 			if(depth == 1){
-				pc = new PropertyCycle(attributes.getValue("name"));
-			} else if ("val".equals(qName)){
+				pc = new PropertyCycle(ConfigFileReader.this, attributes.getValue("name"));
+			} 
+			else if ("val".equals(qName)){
 				final String value = attributes.getValue("value");
 				pc.addValue(value);
 				String t = attributes.getValue("baseline");
 				if ("true".equals(t))
 					pc.setBaseline(value);
-			} else if ("when".equals(qName)){
+			}
+			else if ("when".equals(qName)){
 				PropertyHandler ph = new PropertyHandler();
 				ph.parent = this;
 				parser.setContentHandler(ph);
@@ -136,10 +118,10 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 			}
 		} 
 		else if ("dbprops".equals(qName)) {
-			dbname = atts.getValue("dbname");
+			/*dbname = atts.getValue("dbname");
 			dbout = atts.getValue("dbout");
 			collection = atts.getValue("collection");
-			dbport = Integer.parseInt(atts.getValue("port"));
+			dbport = Integer.parseInt(atts.getValue("port"));*/
 			binpath = atts.getValue("path");
 		}
 	}
