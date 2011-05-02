@@ -33,8 +33,8 @@
 </test>
 </testcases>
 
-<resultsdb uri="mongodb://localhost:30000/results" />
-<path binpath="/home/rushin/mongodb-src/" dumppath="/home/rushin/mongodb-src/temp_dumps/" />
+<resultsdb uri="mongodb://localhost:30000/results.output" />
+<path binpath="/home/r_omio/mongodb-src/" dumppath="/home/r_omio/mongodb-src/temp_dumps/" />
 <!-- old: dbprops dbname="test"  dbout="results" port="30000" binpath="/home/rushin/mongodb-src/"></dbprops -->
 </configuration>
 

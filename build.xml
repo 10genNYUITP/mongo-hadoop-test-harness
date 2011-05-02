@@ -74,6 +74,18 @@
           <antcall target="resolve" /> 
   </target>
 
+  <target name="run-test-harness" depends="jar" description="--> Run the TestHarness">
+    <java classname="TestHarness" >
+      <classpath>
+	<fileset dir=".">
+          <include name="**/*.jar"/>
+<include name="*.jar" />
+	</fileset>
+      </classpath>
+      <arg line="--config src/testharness/Config.xml"/>
+    </java>
+  </target>
+
   <target name="compile" depends="init,checklib,firstresolve" description="--> compile all artifacts">
 
     <javac srcdir="src/testharness/"

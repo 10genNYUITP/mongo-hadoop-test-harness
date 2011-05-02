@@ -18,23 +18,29 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.hadoop.util.MongoConfigUtil;
 
-class PropertyCycle {
+public class PropertyCycle {
 
 	private String propName;
 	private ConfigFileReader cfr;
+	
+	private List<GenerateXML> objs = new ArrayList<GenerateXML>();
 
 	private List<String> vals = new ArrayList<String>();
 	private PropertyCycle when;
 	private PropertyCycle next;
 	private String baseline;
-	String uShards = "FALSE"; //can we delete these?
+	String uShards = "FALSE";
 	String uChunks = "FALSE";
 	String sOk = "FALSE";
+	
+	PropertyCycle() {		
+	}
 
 	PropertyCycle(ConfigFileReader cfr, String name) {
 		this.cfr = cfr;
 		this.propName = name;
 	}
+	
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("{"+propName+",vals="+vals);
@@ -46,6 +52,11 @@ class PropertyCycle {
 
 	public void addValue(String... v) {
 		vals.addAll(java.util.Arrays.asList(v));
+	}
+	
+	public List<GenerateXML> getGens() {
+		System.out.println("OBJS.LENGTH: " + objs.size());
+		return objs;
 	}
 
 	/** Only apply the values of this PropertyCycle to the test if {@code when} is satisfied. */
@@ -78,6 +89,8 @@ class PropertyCycle {
 
 		StringBuilder indent = new StringBuilder();
 		if (next == null) {
+			System.out.println("RUNNING TOOL with outputUri: " + outputUri + " class of tool: " + 
+					tool.getClass().getName() + " with args: " + java.util.Arrays.toString(args));
 			dropOldCollection(outputUri);
 
 
@@ -92,52 +105,68 @@ class PropertyCycle {
 			java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
 			nf.setMaximumFractionDigits(3);
 
-			String md5sum = extracted(cfr.getBinpath(), outputUri);
+			String md5sum = md5calc(cfr.getBinpath(), outputUri);
 			if (true){ //debug code
-				String md2 = extracted(cfr.getBinpath(), outputUri);
+				String md2 = md5calc(cfr.getBinpath(), outputUri);
 				System.out.println("first md5sum: "+md5sum+" 2nd: "+md2);
 			}
-			/*FileReader fr = new FileReader("/home/rushin/mongo-test-harness-eclipse/dump/" + cfr.getDBName() + ".bson");
-			BufferedReader tbfr = new BufferedReader(fr);
 
-			String line;
-			while((line = tbfr.readLine()) != null) {
-				md.update(dataBytes, 0, line.length());
-			} */
-
-			System.out.println("MD5: " + md5sum);
-			for(String str : args) {
-				System.out.println(str);
-			}
 			GenerateXML gx = new GenerateXML();
 			BasicDBObject resultDoc = new BasicDBObject();
-			resultDoc.append("Name", tool.getClass().getName()); 
-			gx.setName(tool.getClass().getName()); 
+			resultDoc.append("Name", tool.getClass().getName());
+			gx.setName(tool.getClass().getName());
 			resultDoc.append("Arguments", args); 
-			gx.setArgs(args);
-			resultDoc.append("Runtime", runtime); 
+			StringBuilder sb = new StringBuilder();
+			for(String arg : args) {
+				sb.append(arg + "; ");
+			}
+			resultDoc.append("Runtime", runtime);
 			gx.setRuntime(runtime);
-			resultDoc.append("MD5 Checksum", md5sum); 
+			resultDoc.append("MD5Checksum", md5sum);
 			gx.setMD5(md5sum);
 			resultDoc.append("Count", getCount(outputUri)); 
 			gx.setCount(getCount(outputUri)); 
 			//todo: store byte size here
-			resultDoc.append("Params", new BasicDBObject(setParams)); 
-			gx.setParams(setParams);
-			resultDoc.append("Start Time", new java.util.Date(start)); 
+			//resultDoc.append("Params", new BasicDBObject(setParams)); 
+			java.util.Iterator<?> it = setParams.entrySet().iterator();
+
+			while(it.hasNext()) {
+				Map.Entry me = (Map.Entry) it.next();
+				if(me.getKey().equals("mongo.splits.use-chunks")) {
+					uChunks = (String) me.getValue();
+				} else if (me.getKey().equals("mongo.splits.use-shards")) {
+					uShards = (String) me.getValue();
+				} else {
+					sOk = (String) me.getValue();
+				}
+			}
+			resultDoc.append("Use-Shards Condition", uShards);
+			gx.setUS(uShards);
+			resultDoc.append("Use-Chunks Condition", uChunks);
+			gx.setUC(uChunks);
+			resultDoc.append("Slave-Ok Condition", sOk);
+			gx.setSO(sOk);
+			//gx.setParams(setParams);
+			resultDoc.append("StartTime", new java.util.Date(start)); 
 			gx.setStart(new java.util.Date(start)); 
-			if (baselineSoFar)
+			if (baselineSoFar) {
 				resultDoc.append("Baseline", Boolean.TRUE); 
-				gx.setBaseline(Boolean.TRUE);
+				gx.setBaseline(Boolean.TRUE); 
+			}
+			System.out.println("OBJ BEING ADDED");
+			System.out.println(gx.getShards());
 			storeResults(resultDoc);
-			gx.addResults();
+			
+			objs.add(gx);
 
 		} else {
 			next.run(tool, args, setParams, baselineSoFar);
 		}
 	}
+	
 	private void storeResults (BasicDBObject ResultDoc) throws MongoException, UnknownHostException{
 		com.mongodb.MongoURI uri =  cfr.getResultURI();
+		System.out.println("storeResults(): URI IS: " + uri);
 		Mongo mongo = new Mongo(uri);
 		try{
 			DB db = mongo.getDB(uri.getDatabase());
@@ -170,29 +199,42 @@ class PropertyCycle {
 				DBCollection coll = db.getCollection(outputUri.getCollection());
 				return coll.count();
 			}
-		}finally{
+		} finally {
 			if (mongo != null)
 				mongo.close();
 		}
 		return -1;
 	}
-	private String extracted( String binpath, com.mongodb.MongoURI outputUri)
+	private String md5calc( String binpath, com.mongodb.MongoURI outputUri)
 	throws NoSuchAlgorithmException, IOException {
+		int size = 0;
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte[] dataBytes = new byte[10000];
 		List<String> hosts = outputUri.getHosts();
 		assert hosts.size() == 1;
 		String hostname = hosts.get(0);
-		String commandString = binpath + "mongodump -h "+hostname+":"  + " -d " + outputUri.getDatabase()
+		String commandString = binpath + "mongodump -h "+hostname + " -d " + outputUri.getDatabase()
 		+" -c "+ outputUri.getCollection()+ " -o -"; // + cfr.getDumpPath();
-		System.out.println("running: "+commandString);
+		System.out.println("md5calc("+outputUri+"): running command "+commandString);
 		Process proc = Runtime.getRuntime().exec(commandString);
 		BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
 		int tempRead;
 		while((tempRead = bfrIS.read(dataBytes, 0, 9999)) > 0) {
 			md.update(dataBytes, 0, tempRead);
+			size += tempRead;
 		}
 		bfrIS.close();
+		int exitValue = -1;
+		try {
+			exitValue = proc.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(exitValue != 0) {
+			System.err.println("mongodump had exit value of: " + exitValue);
+			System.exit(1);
+		}
 
 		byte[] mdbytes = md.digest();
 		StringBuilder sb = new StringBuilder();

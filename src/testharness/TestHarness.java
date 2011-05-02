@@ -6,8 +6,8 @@ public class TestHarness {
 	String [] testcases = null;
 
 	public static void main(String[] args) throws Exception{
-		String fileName  = "/home/rushin/mongo-test-harness-eclipse/src/testharness/Config.xml";
-		//String fileName="";
+		//String fileName  = "/home/r_omio/mongo-hadoop-test-harness/src/testharness/Config.xml";
+		String fileName="";
 		for(int i = 0; i < args.length ; i++){
 			String argi = args[i];
 			if ("--config".equals(argi))
@@ -27,6 +27,7 @@ public class TestHarness {
 		for(TestCase tstc : cfrNew.testcases) {
 			tstc.runTest(cfrNew.propertyCycle);
 		}
-        (new GenerateXML()).generate();
+        //(new GenerateXML()).generate((new PropertyCycle().getGens()));
+        //(new GenerateXML()).generateXML(cfrNew);
 	}
 }

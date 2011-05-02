@@ -23,7 +23,7 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 	private String dumppath;
 
 	public com.mongodb.MongoURI getResultURI(){
-		com.mongodb.MongoURI resultsuri = new com.mongodb.MongoURI(resultsdb); 
+		com.mongodb.MongoURI resultsuri = new com.mongodb.MongoURI(resultsdb);
 		return resultsuri;
 	}
 
@@ -125,10 +125,10 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 			}
 		} 
 		else if ("resultsdb".equals(qName)) {
-			resultsdb = atts.getValue("resultsdb");
+			resultsdb = atts.getValue("uri");
 		}
-		else if("paths".equals(qName)) {
-			binpath = atts.getValue("path");
+		else if("path".equals(qName)) {
+			binpath = atts.getValue("binpath");
 			dumppath = atts.getValue("dumppath");
 		}
 	}
