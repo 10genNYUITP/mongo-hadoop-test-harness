@@ -121,7 +121,8 @@ class ConfigFileReader extends org.xml.sax.ext.DefaultHandler2 {
 				current_testcase = tc;
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+ex.getMessage());
+				System.err.println("Could not instantiate '"+testName+"', caught "+ex.getClass().getName()+" "+ex.getMessage());
+                                System.err.println("my classpath is: "+System.getProperty("java.class.path"));
 			}
 		} 
 		else if ("resultsdb".equals(qName)) {
