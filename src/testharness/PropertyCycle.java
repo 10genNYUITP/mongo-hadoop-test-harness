@@ -28,6 +28,8 @@ public class PropertyCycle {
     private ConfigFileReader cfr;
         
     private List<GenerateXML> objs = new ArrayList<GenerateXML>();
+    
+    private final static java.util.Date testHarnessStart = new java.util.Date();
 
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
@@ -125,6 +127,8 @@ public class PropertyCycle {
             for(String arg : args) {
                 sb.append(arg + "; ");
             }
+            //so the frontent can tell the runs apart
+            resultDoc.append("testHarnessStart", testHarnessStart);
             resultDoc.append("Runtime", runtime);
             gx.setRuntime(runtime);
             resultDoc.append("MD5Checksum", md5sum);
