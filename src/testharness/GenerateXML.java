@@ -13,31 +13,6 @@ import org.w3c.dom.*;
 
 public class GenerateXML {
 
-	public void gen() {
-		
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	private String name;
 	private String [] args; 
 	private Double runtime;
@@ -48,6 +23,10 @@ public class GenerateXML {
 	private String shardsCondition;
 	private String chunksCondition;
 	private String slaveOK;
+
+	public void gen() {
+		
+	}
 
 	public void setName(String n) {
 		name = n;

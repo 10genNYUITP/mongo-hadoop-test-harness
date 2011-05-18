@@ -29,11 +29,8 @@ public class PropertyCycle {
 
     private String propName;
     private ConfigFileReader cfr;
-        
     private List<GenerateXML> objs = new ArrayList<GenerateXML>();
-    
     private final static java.util.Date testHarnessStart = new java.util.Date();
-
     private List<String> vals = new ArrayList<String>();
     private PropertyCycle when;
     private PropertyCycle next;
@@ -51,7 +48,7 @@ public class PropertyCycle {
     }
         
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{"+propName+",vals="+vals);
         if (next != null)
@@ -65,7 +62,6 @@ public class PropertyCycle {
     }
         
     public List<GenerateXML> getGens() {
-        System.out.println("OBJS.LENGTH: " + objs.size());
         return objs;
     }
 
@@ -99,26 +95,16 @@ public class PropertyCycle {
 
         StringBuilder indent = new StringBuilder();
         if (next == null) {
-            System.out.println("RUNNING TOOL with outputUri: " + outputUri + " class of tool: " + 
-                               tool.getClass().getName() + " with args: " + java.util.Arrays.toString(args));
             dropOldCollection(outputUri);
-
-
             final long start = System.currentTimeMillis();
-
-
             tool.run(args);
-
-
             final long end = System.currentTimeMillis();
             final double runtime = ((double)(end - start))/1000;
             java.text.NumberFormat nf = java.text.NumberFormat.getInstance();
             nf.setMaximumFractionDigits(3);
-
             String md5sum = md5calc(cfr.getBinpath(), outputUri);
-            if (true){ //debug code
+            if (true) {
                 String md2 = md5calc(cfr.getBinpath(), outputUri);
-                System.out.println("first md5sum: "+md5sum+" 2nd: "+md2);
             }
 
             GenerateXML gx = new GenerateXML();
@@ -130,7 +116,6 @@ public class PropertyCycle {
             for(String arg : args) {
                 sb.append(arg + "; ");
             }
-            //so the frontent can tell the runs apart
             resultDoc.append("testHarnessStart", testHarnessStart);
             resultDoc.append("Runtime", runtime);
             gx.setRuntime(runtime);
@@ -139,10 +124,7 @@ public class PropertyCycle {
             resultDoc.append("outputByteSize", savedMd5Size);
             resultDoc.append("Count", getCount(outputUri)); 
             gx.setCount(getCount(outputUri)); 
-            //todo: store byte size here
-            //resultDoc.append("Params", new BasicDBObject(setParams)); 
             java.util.Iterator<?> it = setParams.entrySet().iterator();
-
             while(it.hasNext()) {
                 Map.Entry me = (Map.Entry) it.next();
                 if(me.getKey().equals("mongo.splits.use-chunks")) {
@@ -159,29 +141,23 @@ public class PropertyCycle {
             gx.setUC(uChunks);
             resultDoc.append("Slave-Ok Condition", sOk);
             gx.setSO(sOk);
-            //gx.setParams(setParams);
             resultDoc.append("StartTime", new java.util.Date(start)); 
             gx.setStart(new java.util.Date(start)); 
             if (baselineSoFar) {
                 resultDoc.append("Baseline", Boolean.TRUE); 
                 gx.setBaseline(Boolean.TRUE); 
             }
-            System.out.println("OBJ BEING ADDED");
-            System.out.println(gx.getShards());
             storeResults(resultDoc);
-                        
             objs.add(gx);
-
         } else {
             next.run(tool, args, setParams, baselineSoFar);
         }
     }
         
-    private void storeResults (BasicDBObject ResultDoc) throws MongoException, UnknownHostException{
+    private void storeResults (BasicDBObject ResultDoc) throws MongoException, UnknownHostException {
         com.mongodb.MongoURI uri =  cfr.getResultURI();
-        System.out.println("storeResults(): URI IS: " + uri);
         Mongo mongo = new Mongo(uri);
-        try{
+        try {
             DB db = mongo.getDB(uri.getDatabase());
             DBCollection coll = db.getCollection(uri.getCollection());
             coll.insert(ResultDoc);
@@ -190,23 +166,23 @@ public class PropertyCycle {
                 mongo.close();
         }
     }
-    private void dropOldCollection(com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException      {
+    private void dropOldCollection(com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException {
         Mongo mongo = new Mongo(outputUri);
-        try{
+        try {
             DB db = mongo.getDB(outputUri.getDatabase());
 
             if (db.collectionExists(outputUri.getCollection())) {
                 DBCollection coll = db.getCollection(outputUri.getCollection());
                 coll.drop();
             }
-        }finally{
+        }finally {
             if (mongo != null)
                 mongo.close();
         }
     }
-    private long getCount( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException      {
+    private long getCount( com.mongodb.MongoURI outputUri) throws MongoException, UnknownHostException {
         Mongo mongo = new Mongo(outputUri);
-        try{
+        try {
             DB db = mongo.getDB(outputUri.getDatabase());
             if (db.collectionExists(outputUri.getCollection())) {
                 DBCollection coll = db.getCollection(outputUri.getCollection());
@@ -218,7 +194,7 @@ public class PropertyCycle {
         }
         return -1;
     }
-    private int savedMd5Size = -1; //set by md5calc()
+    private int savedMd5Size = -1;
     private String md5calc( String binpath, com.mongodb.MongoURI outputUri)
         throws NoSuchAlgorithmException, IOException {
         int size = 0;
@@ -227,24 +203,21 @@ public class PropertyCycle {
         List<String> hosts = outputUri.getHosts();
         assert hosts.size() == 1;
         String hostname = hosts.get(0);
-        String commandString = binpath + "mongodump -h "+hostname + " -d " + outputUri.getDatabase()
-            +" -c "+ outputUri.getCollection()+ " -o -"; // + cfr.getDumpPath();
-        System.out.println("md5calc("+outputUri+"): running command "+commandString);
+        String commandString = binpath + "mongodump -h "+hostname + " -d " + outputUri.getDatabase() + " -c "+ outputUri.getCollection()+ " -o -";
         final Process proc = Runtime.getRuntime().exec(commandString);
         BufferedInputStream bfrIS = new BufferedInputStream(proc.getInputStream());
         final BufferedReader stderrIS = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         final java.io.CharArrayWriter stdErrCap = new CharArrayWriter();
         (new Thread(new Runnable() {
-
-                public void run() {
-                    while(true){
-                        try {
-                            String line = stderrIS.readLine();
-                            if (line == null)
-                                return;
+        	public void run() {
+        		while(true){
+        			try {
+        				String line = stderrIS.readLine();
+                        if (line == null)
+                        	return;
                             stdErrCap.append(line);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
+                        }catch (IOException ex) {
+                        	ex.printStackTrace();
                         }
                     }
                 }
@@ -261,13 +234,9 @@ public class PropertyCycle {
         try {
             exitValue = proc.waitFor();
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         if(exitValue != 0) {
-            System.err.println("ERROR mongodump had exit value of: " + exitValue);
-            System.err.println(stdErrCap.toString());
-            System.exit(1);
         }
 
         byte[] mdbytes = md.digest();
@@ -283,11 +252,11 @@ public class PropertyCycle {
     void run(org.apache.hadoop.util.Tool tool, String[] args) throws Exception {
         run(tool,args,new HashMap<String, String>(), true);
     }
-    private void run(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams, boolean baselineSoFar) throws Exception{
+    private void run(org.apache.hadoop.util.Tool tool, String[] args, Map<String,String> setParams, boolean baselineSoFar) throws Exception {
         final org.apache.hadoop.conf.Configuration conf = tool.getConf();
         setParams = new HashMap<String, String>(setParams);
 
-        if ((when != null) && !when.is_satifisifed(conf)){
+        if ((when != null) && !when.is_satifisifed(conf)) {
             if(shardsCondition(setParams)) {
                 for(String val : vals) {
                     conf.set(propName, val);
@@ -298,7 +267,7 @@ public class PropertyCycle {
                 runTool(tool, args, setParams, baselineSoFar);
             }
         }
-        else{
+        else {
             for (String val : vals) {
                 conf.set(propName, val);
                 setParams.put(propName, val);
